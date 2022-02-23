@@ -5,6 +5,7 @@ from app.serializers import ProjectSerializer, TODOSerializer
 from rest_framework.pagination import LimitOffsetPagination
 from .filters import ProjectFilter, TODOFilter
 from rest_framework.response import Response
+from rest_framework import permissions
 
 
 class ProjectPagination(LimitOffsetPagination):
@@ -16,6 +17,7 @@ class TODOPagination(LimitOffsetPagination):
 
 
 class ProjectViewSet(ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
@@ -24,6 +26,7 @@ class ProjectViewSet(ModelViewSet):
 
 
 class TODOViewSet(ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
     renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
     queryset = TODO.objects.all()
     serializer_class = TODOSerializer
