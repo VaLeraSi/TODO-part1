@@ -15,3 +15,9 @@ class TODOSerializer(serializers.ModelSerializer):
     class Meta:
         model = TODO
         fields = '__all__'
+
+
+class TODOSerializerBase(serializers.ModelSerializer):
+    class Meta:
+        model = TODO
+        fields = '__all__'
