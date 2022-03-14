@@ -1,17 +1,22 @@
-from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.renderers import JSONRenderer, AdminRenderer
+
+from REST.permissions import UserCategoryPermission
 from .models import User
-from .serializers import UserModelSerializer
+from .serializers import UserModelSerializer, UserAccessModelSerializer
 from rest_framework import mixins, viewsets
 
 
-class UserModelViewSet(ModelViewSet):
+class UserCustomViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
-    serializer_class = UserModelSerializer
+    # serializer_class = UserModelSerializer
+    renderer_classes = [JSONRenderer, AdminRenderer]
+    permission_classes = (UserCategoryPermission,)
+
+    def get_serializer_class(self):
+        if self.request.version == '2.0':
+            return UserAccessModelSerializer
+        else:
+            return UserModelSerializer
 
 
-class UserNewViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin,
-                     mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    queryset = User.objects.all()
-    serializer_class = UserModelSerializer
-    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
