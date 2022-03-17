@@ -151,5 +151,5 @@ REST_FRAMEWORK = {
 }
 
 GRAPHENE = {
-    "SCHEMA": "library.schema.schema"
+    "SCHEMA": "notes.schema.schema"
 }
