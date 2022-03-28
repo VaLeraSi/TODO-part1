@@ -3,10 +3,12 @@ import UserList from './components/User.js'
 import TODOList from './components/todo.js'
 import ProjectList from './components/project.js'
 import UserTodoList from './components/UserTodo.js'
-import {BrowserRouter, Route, Link, Switch, Redirect} from 'react-router-dom'
+import {BrowserRouter, Route, Link, Switch, Redirect, Routes, Navigate} from 'react-router-dom'
 import axios from 'axios'
 import LoginForm from './components/Auth.js'
 import Cookies from 'universal-cookie';
+import ProjectForm from "./components/ProjectForm";
+import TODOForm from "./components/TODOForm";
 
 
 
@@ -102,6 +104,48 @@ class App extends React.Component {
     this.get_token_from_storage()
   }
 
+  deleteProject(id) {
+      const headers = this.get_headers()
+      axios.delete(`http://127.0.0.1:8000/api/projects/${id}`, {headers: headers})
+          .then(response => {
+              this.setState({projects: this.state.projects.filter((item) => item.id !== id)})
+          }).catch(error => console.log(error))
+      window.location = '/projects/';
+  }
+
+  deleteTODO(id) {
+      const headers = this.get_headers()
+      axios.delete(`http://127.0.0.1:8000/api/todos/${id}`, {headers: headers})
+          .then(response => {
+              this.setState({todos: this.state.todos})
+          }).catch(error => console.log(error))
+      window.location = '/todos/';
+  }
+
+  createProject(name, prj_url, users) {
+      const headers = this.get_headers()
+      const data = {name: name, prj_url: prj_url, users: users}
+      axios.post(`http://127.0.0.1:8000/api/projects/`, data, {headers: headers})
+          .then(response => {
+              let new_project = response.data
+              new_project.users = this.state.users.filter((item) => item.id === new_project.users)[0]
+              this.setState({projects: [...this.state.projects, new_project]})
+          }).catch(error => console.log(error))
+      window.location = '/projects/';
+  }
+
+  createTODO(body, project) {
+      const headers = this.get_headers()
+      const url_project = 'http://127.0.0.1:8000/api/projects/' + project + '/'
+      const data = {body: body, project: url_project}
+      axios.post(`http://127.0.0.1:8000/api/todos/`, data, {headers: headers})
+          .then(response => {
+              let new_todo = response.data
+              new_todo.project = this.state.project.filter((item) => item.id === new_todo.project)[0]
+              this.setState({todos: [...this.state.todos, new_todo]})
+          }).catch(error => console.log(error))
+      window.location = '/todos/';
+  }
 
   render() {
     return (
@@ -122,9 +166,11 @@ class App extends React.Component {
           </nav>
              <Switch>
               <Route exact path='/' component={() => <UserList items={this.state.users} />}  />
-              <Route exact path='/projects' component={() => <ProjectList items={this.state.projects} />} />
-              <Route exact path='/todos' component={() => <TODOList items={this.state.todos} />} />
+              <Route exact path='/projects' component={() => <ProjectList items={this.state.projects} deleteProject={(id) => this.deleteProject(id)} />} />
+              <Route exact path='/todos' component={() => <TODOList items={this.state.todos} deleteTODO={(id) => this.deleteTODO(id)} />} />
               <Route exact path='/login' component={() => <LoginForm get_token={(username, password) => this.get_token(username, password)} />} />
+              <Route exact path='/projects/create' element={<ProjectForm all_users={this.state.users} createProject={(name, prj_url, users) => this.createProject (name, prj_url, users)} />}  />
+              <Route exact path='/todos/create' element={<TODOForm projects={this.state.projects} createTODO={(body, project) => this.createTODO (body, project)} />}  />
               <Route path="/user/:id">
                 <UserTodoList items={this.state.todos} />
               </Route>
